@@ -1,91 +1,79 @@
 include 'emu8086.inc'
-display macro arg
-        lea dx,arg
-        mov ah,09h
-        int 21h
-endm
+#make_com#
+org 100h
 
-ndisp macro arg 
-        local l1,l2
-        mov ax,arg
-        mov cx,00h
-        mov bx,0ah
-        l1:
-                mov dx,0000h
-                div bx
-                push dx
-                inc cx
-                cmp ax,00h
-                jnz l1
-        l2:
-                pop dx
-                add dx,30h
-                mov ah,02h
-                int 21h
-                loop l2
-endm
+            LEA si,msgh         ;HORA
+            call print_string
+            
+            LEA DI,hora1
+            mov dx,02H
+            call get_string
+            LEA DI,hora2
+            mov dx,02H
+            call get_string
+            sub hora1,30H
+            sub hora2,30H
+                           
+            PUTC 0AH
+            PUTC 0DH
+            
+            LEA si,msgm         ;MINUTO
+            call print_string
+            
+            LEA DI,minuto1
+            mov dx,02H
+            call get_string
+            LEA DI,minuto2
+            mov dx,02H
+            call get_string
+            sub minuto1,30h
+            sub minuto2,30h
+                            
+            PUTC 0AH
+            PUTC 0DH
+            
+            LEA si,msgs         ;SEGUNDO
+            call print_string
+            
+            LEA DI,segundo1
+            mov dx,02H
+            call get_string
+            LEA DI,segundo2
+            mov dx,02H
+            call get_string
+            sub segundo1,30h
+            sub segundo2,30h
+                            
+            PUTC 0AH
+            PUTC 0DH   
+            
+      start:;cmp     segundo,09H
+            ;jz      inctime
+            mov     bx,segundo2
+            MOV     CX, 0FH     ;delay de 1segundo
+            MOV     DX, 4240H
+            MOV     AH, 86H
+            INT     15H
+            add     segundo2,01h
+            
+            jmp start
+            
+    ;inctime:bx
 
-data segment
-        msg1 db 0ah,0dh,"The Time is $"
-        str1 db " : $"
-        msg2 db 0ah,0dh,"The Date is $"
-        str2 db " - $"
-        hrs db ?
-        min db ?
-        sec db ?
-        yr dw ?
-        mnth db ?
-        dat db ?
-data ends
+ret 
+msgh     db "Digite a(s) hora(s): ",0
+msgm     db "Digite o(s) minuto(s): ",0
+msgs     db "Digite o(s) segundo(s): ",0
+hora1    DW 00H;
+hora2    DW 00H;
+minuto1  DW 00H;
+minuto2  DW 00H;
+segundo1 DW 00H;
+segundo2 DW 00H;
 
-code segment
-        assume cs:code,ds:data
-        start :
-                mov ax,data
-                mov ds,ax
-                mov ah,2ch
-                int 21h
-                mov hrs,ch
-                mov min,cl
-                mov sec,dh
-                display msg1
-                mov ah,00h
-                mov al,hrs
-                ndisp ax
+    DEFINE_PRINT_STRING
+    DEFINE_GET_STRING  
 
-                display str1
-                mov ah,00h
-                mov al,min
-                ndisp ax
-                display str1
-                mov ah,00h
-                mov al,sec
-                ndisp ax
 
-                mov ah,2ah
-                int 21h
-                mov yr,cx
-                mov mnth,dh
-                mov dat,dl
-
-                display msg1
-                mov ah,00h
-                mov al,dat
-                ndisp ax
-                display str2
-                mov ah,00h
-                mov al,mnth
-                ndisp ax
-                display str2
-                mov ax,yr
-                ndisp ax
-                CALL CLEAR_SCREEN  
-                jmp start                                              
-                
-                mov ah,4ch
-                int 21h
-
-code ends 
-
-    DEFINE_CLEAR_SCREEN
-end start
+    
+END
