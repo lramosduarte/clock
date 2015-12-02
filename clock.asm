@@ -1,7 +1,17 @@
 include 'emu8086.inc'
 #make_com#
-org 100h
-            LEA si,msgh         ;MINUTO
+org 100h      
+
+;O relogio recebe cada digito de hora,minuto e segundo de maneira individual
+;aguardando a tecla enter finalizar a entrada de cada digito.
+                
+            LEA si, msginfor
+            call print_string
+            
+            PUTC 0AH
+            PUTC 0DH                
+                
+            LEA si,msgh         ;HORA
             call print_string
             
             LEA DI,hora1
@@ -49,7 +59,7 @@ org 100h
             PUTC 0AH
             PUTC 0DH   
             
-      start:GOTOXY 0,3            ;imprime  a hora
+      start:GOTOXY 0,5            ;imprime  a hora
             MOV     BX,hora
             MOV     hora2,BL
             MOV     hora1,BH
@@ -80,8 +90,8 @@ org 100h
             add     segundo2,01h   
             jmp     start
             
-       incs:MOV     segundo2,00H
-            add     segundo1,01H
+       incs:MOV     segundo2,00H      ;incrementa digito a digito
+            add     segundo1,01H      ;o tempo do contador do relogio
             CMP     segundo1,06H
             JZ      incm2
             JMP     start
@@ -100,20 +110,22 @@ org 100h
             
      finish:MOV     minuto1,00H
             ADD     hora,01H
-            CMP     hora,24H
+            MOV     Bx,hora
+            CMP     hora,BX
             JZ      reset
             JMP     start;
             
       reset:MOV     hora,00H;
             jmp     start
             
-ret  
+ret                           
+msginfor db "Favor entrar com os dados digito a digito pressionando enter para confirmar cada digito.", 0
 msgh     db "Digite a hora: ",0 
 msgm     db "Digite o(s) minuto(s): ",0   
-msgs     db "Digite o(s) segundo(s): ",0
+msgs     db "Digite o(s) segundo(s): ",0 
 hora     DW 00H;   
-hora1    DB 00H
-hora2    DB 00H
+hora1    DB 00H;
+hora2    DB 00H;
 minuto1  DW 00H;
 minuto2  DW 00H;
 segundo1 DW 00H;
